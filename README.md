@@ -51,7 +51,7 @@ What I want to add next:
 - Add leaderboard with usernames
 - Better score management
 - Maybe a bit optimized code
-- GUI (i doubt it), it just prettier looking terminal
+- GUI (i doubt it), or just prettier looking terminal
 - Reduce some bugs, corrupt files handling
 - Make it more user-friendly
 
@@ -59,7 +59,7 @@ What I want to add next:
 
 You can compile the game using GCC:
 
-`gcc `Guess the number.c` -o `Guess the number``
+`gcc 'Guess The Number.c' -o 'Guess The Number'`
 
 Then run it with:
 
