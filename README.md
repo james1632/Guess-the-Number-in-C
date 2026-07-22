@@ -47,6 +47,7 @@ This project taught me:
 - in `limits.h` there is `EXIT_SUCCESS` and `INT_MAX` etc.
 - A lot of basics things about working with files
 - Comparing strings using `strcmp()`
+
 What I want to add next:
 - Add leaderboard with usernames
 - Better score management
