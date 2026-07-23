@@ -1,6 +1,6 @@
 # Guess the Number
 
-> A simple terminal number guessing game written in C. > 
+> A simple terminal number guessing game written in C. 
 
 In this game the computer picks a random number for you to guess. You can choose one of three ranked levels, which are automatically saved in a local text file, or you can choose a non-ranked custom level for you to challange yourself with bigger ranges. 
 
@@ -47,6 +47,7 @@ This project taught me:
 - in `limits.h` there is `EXIT_SUCCESS` and `INT_MAX` etc.
 - A lot of basics things about working with files
 - Comparing strings using `strcmp()`
+- Structures and using it in combination with pointers
 
 What I want to add next:
 - Add leaderboard with usernames
@@ -60,7 +61,7 @@ What I want to add next:
 
 You can compile the game using GCC:
 
-`gcc 'Guess The Number.c' -o 'Guess The Number'`
+`gcc guess.c -o guess`
 
 Then run it with:
 

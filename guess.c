@@ -8,118 +8,154 @@
 #define EASY_MAX 10
 #define MEDIUM_MAX 100
 #define HARD_MAX 1000
+#define BUFFER_SIZE 256
+
+
+typedef struct
+{
+    int easy;
+    int medium;
+    int hard;
+} Scores;
+
+
+int loadScores(Scores *scores)
+{
+    char buffer[BUFFER_SIZE];
+    char difficulty[20];
+    int score;
+
+    FILE *pF = fopen("score.txt", "r");
+
+    if (pF == NULL)
+    {
+        return 0;
+    }
+
+    while (fgets(buffer, sizeof(buffer), pF) != NULL)
+    {
+        if (sscanf(buffer, "%d %19s", &score, difficulty) != 2)
+        {
+            continue;
+        }
+
+        if (strcmp(difficulty, "easy") == 0)
+        {
+            scores->easy = score;
+        }
+        else if (strcmp(difficulty, "medium") == 0)
+        {
+            scores->medium = score;
+        }
+        else if (strcmp(difficulty, "hard") == 0)
+        {
+            scores->hard = score;
+        }
+    }
+
+    fclose(pF);
+
+    return 1;
+}
+
+
+int saveScores(const Scores *scores)
+{
+    FILE *pF = fopen("score.txt", "w");
+
+    if (pF == NULL)
+    {
+        return 0;
+    }
+
+    fprintf(pF, "%d easy\n", scores->easy);
+    fprintf(pF, "%d medium\n", scores->medium);
+    fprintf(pF, "%d hard\n", scores->hard);
+
+    fclose(pF);
+
+    return 1;
+}
 
 
 int maxScore(int score, int max)
 {
-    int easy = 0;
-    int medium = 0;
-    int hard = 0;
+    Scores scores = {0, 0, 0};
 
-    char buffer[100];
-    char difficulty[20];
-    int oldScore;
+    loadScores(&scores);
 
-    FILE *pF = fopen("score.txt", "r");
-    if (pF != NULL) 
-    { 
-       while (fgets(buffer, sizeof(buffer), pF) != NULL)
-        {
-            sscanf(buffer, "%d %s", &oldScore, difficulty);
-            if (strcmp(difficulty, "easy") == 0)
-                easy = oldScore;
-            if (strcmp(difficulty, "medium") == 0)
-                medium = oldScore;
-            if (strcmp(difficulty, "hard") == 0)
-                hard = oldScore;
-        }
-        fclose(pF);
-    }
-
-    if (max == EASY_MAX && (easy == 0 || score<easy))
-        easy = score;
-    if (max == MEDIUM_MAX && (medium == 0 || score<medium))
-        medium = score;
-    if (max == HARD_MAX && (hard == 0 || score<hard))
-        hard = score;
-    
-    pF = fopen("score.txt", "w");
-
-    if (pF == NULL)
+    if (max == EASY_MAX && (scores.easy == 0 || score < scores.easy))
     {
-        printf("Error\n");
-        return 1;
+        scores.easy = score;
     }
 
-    fprintf(pF, "%d easy\n", easy);
-    fprintf(pF, "%d medium\n", medium);
-    fprintf(pF, "%d hard\n", hard);
+    else if (max == MEDIUM_MAX && (scores.medium == 0 || score < scores.medium))
+    {
+        scores.medium = score;
+    }
 
-    fclose(pF);
-    return 0;
+    else if (max == HARD_MAX && (scores.hard == 0 || score < scores.hard))
+    {
+        scores.hard = score;
+    }
+
+    if (saveScores(&scores) == 0)
+    {
+        printf("Error saving scores.\n");
+        return 0;
+    }
+
+    return 1;
 }
 
 
 int checkScore()
 {
-    char buffer[255];
-    char difficulty[20];
-    int score;
-    int easy;
-    int medium;
-    int hard;
-    
-    FILE *pF = fopen("score.txt", "r");
+    Scores scores = {0, 0, 0};
 
-    if (pF == NULL) 
-    { 
-        printf("No save file detected. Press any key to continue game: "); 
-        getchar(); 
-        getchar(); 
-        return 1; 
+    if (loadScores(&scores) == 0)
+    {
+        printf("No save file detected.\n");
+        printf("Press any key to continue playing...");
+        getchar();
+        getchar();
+
+        return 0;
     }
-    else
-    { 
-       while (fgets(buffer, sizeof(buffer), pF) != NULL)
-        {
-            sscanf(buffer, "%d %s", &score, difficulty);
-            if (strcmp(difficulty, "easy") == 0)
-                easy = score;
-            if (strcmp(difficulty, "medium") == 0)
-                medium = score;
-            if (strcmp(difficulty, "hard") == 0)
-                hard = score;
-        }
-        fclose(pF);
-    }
-    
-    printf("- Easy Best Score: %d\n"
-           "- Medium Best Score: %d\n"
-           "- Hard Best Score: %d\n"
-           "Press any key to continue game...", easy, medium, hard);
+
+    printf(
+        "- Easy Best Score: %d\n"
+        "- Medium Best Score: %d\n"
+        "- Hard Best Score: %d\n"
+        "Press any key to continue playing...",
+        scores.easy,
+        scores.medium,
+        scores.hard
+    );
 
     getchar();
     getchar();
-    return 0;
+
+    return 1;
 }
 
 
 int readInt(int min, int max, const char* messange)
 {
     int x;
-
+    int c;
     while (scanf("%d", &x) != 1 || x < min || x > max)
     {
         printf("%s", messange);
 
-        while (getchar() != '\n');
+        while ((c = getchar()) != '\n' && c != EOF);
     }
 
     return x;
 }
 
 
-int doYouPlayAgain()
+bool playAgain()
 {
     char answer;
 
@@ -129,9 +165,9 @@ int doYouPlayAgain()
     answer = getchar();
 
     if (answer == 'n' || answer == 'N')
-        return EXIT_SUCCESS;
+        return false;
 
-    return 1;
+    return true;
 }
 
 void screen()
@@ -159,7 +195,7 @@ int game(int max, bool ranked)
 
     int guess, tries = 0;
     printf("Guess the number from 1 to %d!: ", max); 
-    while (1)
+    while (true)
     {
         guess = readInt(1, max, "Input not allowed.\nTry again:");
 
@@ -182,7 +218,7 @@ int game(int max, bool ranked)
         }
     } 
 
-    return doYouPlayAgain();
+    return playAgain();
 }
 
 int custom()
@@ -200,9 +236,16 @@ int main()
 {
     srand(time(NULL));
     
-    while (1)
+    while (true)
     {
-        printf("\033[2J"); 
+        //printf("\033[2J"); 
+            
+        #ifdef _WIN32
+        system("cls");
+        #else
+        system("clear");
+        #endif    
+
         screen();
 
         int level;
